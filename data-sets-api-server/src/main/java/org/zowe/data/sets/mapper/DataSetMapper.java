@@ -23,14 +23,11 @@ import org.zowe.data.sets.model.DataSetAttributes;
 public interface DataSetMapper {
     DataSetMapper INSTANCE = Mappers.getMapper(DataSetMapper.class);
 
-    @Mappings({
-            @Mapping(source = "zosObject", target = "name", qualifiedBy = FieldMapper.dsname.class),
-            @Mapping(source = "zosObject", target = "migrated", qualifiedBy = FieldMapper.migr.class)
-    })
+    @Mappings({ @Mapping(source = "zosObject", target = "name", qualifiedBy = FieldMapper.dsname.class),
+            @Mapping(source = "zosObject", target = "migrated", qualifiedBy = FieldMapper.migr.class) })
     DataSet zosToDataSetDTO(JsonObject zosObject);
 
-    @Mappings({
-            @Mapping(source = "zosObject", target = "name", qualifiedBy = FieldMapper.dsname.class),
+    @Mappings({ @Mapping(source = "zosObject", target = "name", qualifiedBy = FieldMapper.dsname.class),
             @Mapping(source = "zosObject", target = "volumeSerial", qualifiedBy = FieldMapper.vols.class),
             @Mapping(source = "zosObject", target = "deviceType", qualifiedBy = FieldMapper.dev.class),
             @Mapping(source = "zosObject", target = "dataSetOrganization", qualifiedBy = FieldMapper.dsorg.class),
@@ -47,7 +44,6 @@ public interface DataSetMapper {
             @Mapping(source = "zosObject", target = "primary", ignore = true),
             @Mapping(source = "zosObject", target = "secondary", ignore = true),
             @Mapping(source = "zosObject", target = "directoryBlocks", ignore = true),
-            @Mapping(source = "zosObject", target = "averageBlock", ignore = true)
-    })
+            @Mapping(source = "zosObject", target = "averageBlock", ignore = true) })
     DataSetAttributes zosToDataSetAttributesDTO(JsonObject zosObject);
 }

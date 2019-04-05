@@ -12,7 +12,7 @@ package org.zowe.unix.files.services.zosmf;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
 import org.junit.Test;
-import org.zowe.data.sets.services.zosmf.AbstractZosmfRequestRunnerTest;
+import org.zowe.data.sets.services.zosmf.AbstractZRequestRunnerTest;
 import org.zowe.unix.files.exceptions.PathNameNotValidException;
 import org.zowe.unix.files.exceptions.UnauthorisedFileException;
 import org.zowe.unix.files.model.UnixFileContent;
@@ -20,7 +20,7 @@ import org.zowe.unix.files.model.UnixFileContent;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class GetUnixFileContentRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class GetUnixFileContentRunnerTest extends AbstractZRequestRunnerTest {
     
     @Test
     public void get_unix_file_content_should_call_zosmf_and_parse_response_correctly() throws Exception {

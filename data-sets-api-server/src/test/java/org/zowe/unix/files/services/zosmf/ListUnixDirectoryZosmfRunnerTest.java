@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.zowe.data.sets.services.zosmf.AbstractZosmfRequestRunnerTest;
+import org.zowe.data.sets.services.zosmf.AbstractZRequestRunnerTest;
 import org.zowe.unix.files.exceptions.UnauthorisedDirectoryException;
 import org.zowe.unix.files.model.UnixDirectoryAttributesWithChildren;
 import org.zowe.unix.files.model.UnixDirectoryChild;
@@ -27,7 +27,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class ListUnixDirectoryZosmfRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class ListUnixDirectoryZosmfRunnerTest extends AbstractZRequestRunnerTest {
     
     @Test
     public void get_unix_directory_list_should_call_zosmf_and_parse_response_correctly() throws Exception {

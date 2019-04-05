@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ListDataSetAttributesZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class ListDataSetAttributesZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     @Test
     public void get_data_set_attributes_should_call_zosmf_and_parse_response_correctly() throws Exception {

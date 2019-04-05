@@ -42,6 +42,23 @@ public enum DataSetOrganisationType {
                 "Character: " + zosmfName + " was not a recognised data set organisation type");
     }
 
+    // TODO NOW - support all
+    public static DataSetOrganisationType getByZss(String organization, Boolean isExtended) {
+        if ("partitioned".equals(organization)) {
+            if (isExtended != null && isExtended) {
+                return PO_E;
+            }
+            return PO;
+        } else if ("sequential".equals(organization)) {
+            if (isExtended != null && isExtended) {
+                return PS_E;
+            }
+            return PS;
+        }
+        throw new IllegalArgumentException("Organization: " + organization + " isExtended " + isExtended
+                + " was not a recognised data set organisation type");
+    }
+
     public String getZosmfName() {
         return zosmfName;
     }

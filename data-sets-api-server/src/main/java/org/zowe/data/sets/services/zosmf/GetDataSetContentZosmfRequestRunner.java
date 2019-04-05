@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.connectors.zosmf.exceptions.DataSetNotFoundException;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
 import org.zowe.api.common.utils.ResponseCache;
@@ -34,9 +34,9 @@ public class GetDataSetContentZosmfRequestRunner extends AbstractZosmfDataSetsRe
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException, IOException {
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException, IOException {
         String urlPath = String.format("restfiles/ds/%s", dataSetName);
-        URI requestUrl = zosmfConnector.getFullUrl(urlPath); // $NON-NLS-1$
+        URI requestUrl = zConnector.getFullUrl(urlPath); // $NON-NLS-1$
         RequestBuilder requestBuilder = RequestBuilder.get(requestUrl);
         requestBuilder.addHeader("X-IBM-Return-Etag", "true");
         return requestBuilder;

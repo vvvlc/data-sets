@@ -33,3 +33,10 @@ server:
 zosmf:
   ipAddress: ${zosmf.ipAddress}
   httpsPort: ${zosmf.httpsPort}
+  
+zss:
+  ipAddress: ${zss.ipAddress}
+  port: ${zss.port}
+
+connector: ${connector}
+  

@@ -15,13 +15,12 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
+import org.zowe.api.common.services.AbstractZRequestRunner;
 import org.zowe.api.common.utils.ResponseCache;
-import org.zowe.api.common.zosmf.services.AbstractZosmfRequestRunner;
 import org.zowe.unix.files.exceptions.PathNameNotValidException;
 import org.zowe.unix.files.exceptions.UnauthorisedDirectoryException;
 import org.zowe.unix.files.model.UnixDirectoryAttributesWithChildren;
@@ -36,11 +35,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListUnixDirectoryZosmfRunner extends AbstractZosmfRequestRunner<UnixDirectoryAttributesWithChildren> {
+public class ListUnixDirectoryZosmfRunner extends AbstractZRequestRunner<UnixDirectoryAttributesWithChildren> {
 
-    @Autowired
-    ZosmfConnector zosmfConnector;
-    
     private String path;
 
     public ListUnixDirectoryZosmfRunner(String path) {
@@ -48,9 +44,9 @@ public class ListUnixDirectoryZosmfRunner extends AbstractZosmfRequestRunner<Uni
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException {
+    protected <Z extends ZConnector> RequestBuilder prepareQuery(Z zConnector) throws URISyntaxException, IOException {
         String query = String.format("path=%s", path);
-        URI requestUrl = zosmfConnector.getFullUrl("restfiles/fs", query);
+        URI requestUrl = zConnector.getFullUrl("restfiles/fs", query);
         RequestBuilder requestBuilder = RequestBuilder.get(requestUrl);
         return requestBuilder;
     }
@@ -65,46 +61,46 @@ public class ListUnixDirectoryZosmfRunner extends AbstractZosmfRequestRunner<Uni
         JsonObject directoryListResponse = responseCache.getEntityAsJsonObject();
         JsonElement directoryListArray = directoryListResponse.get("items");
         List<UnixDirectoryChild> directoryChildren = getChildrenFromJsonArray(directoryListArray.getAsJsonArray());
-        
+
         JsonObject directoryObject = directoryListArray.getAsJsonArray().get(0).getAsJsonObject();
-        UnixDirectoryAttributesWithChildren unixDirectoryAttributesWithChildren = UnixDirectoryAttributesWithChildren.builder()
-                .owner(getStringOrNull(directoryObject, "user"))
-                .group(getStringOrNull(directoryObject, "group"))
-                .type(getEntityTypeFromSymbolicPermissions(getStringOrNull(directoryObject, "mode")))
-                .permissionsSymbolic(getStringOrNull(directoryObject, "mode"))
-                .size(getIntegerOrNull(directoryObject, "size"))
-                .lastModified(getStringOrNull(directoryObject, "mtime"))
-                .children(directoryChildren).build();
-        
+        UnixDirectoryAttributesWithChildren unixDirectoryAttributesWithChildren = UnixDirectoryAttributesWithChildren
+            .builder().owner(getStringOrNull(directoryObject, "user")).group(getStringOrNull(directoryObject, "group"))
+            .type(getEntityTypeFromSymbolicPermissions(getStringOrNull(directoryObject, "mode")))
+            .permissionsSymbolic(getStringOrNull(directoryObject, "mode"))
+            .size(getIntegerOrNull(directoryObject, "size")).lastModified(getStringOrNull(directoryObject, "mtime"))
+            .children(directoryChildren).build();
+
         return unixDirectoryAttributesWithChildren;
     }
-    
+
     private List<UnixDirectoryChild> getChildrenFromJsonArray(JsonArray directoryListArray) {
         List<UnixDirectoryChild> directoryChildren = new ArrayList<UnixDirectoryChild>();
-        
+
         for (JsonElement jsonElement : directoryListArray) {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             // Skip self and parent
             if (!getStringOrNull(jsonObject, "name").equals(".") && !getStringOrNull(jsonObject, "name").equals("..")) {
-                UnixDirectoryChild unixDirectoryChild = UnixDirectoryChild.builder().name(getStringOrNull(jsonObject, "name"))
-                        .type(getEntityTypeFromSymbolicPermissions(getStringOrNull(jsonObject, "mode")))
-                        .link(constructLinkString(getStringOrNull(jsonObject, "name"))).build();
+                UnixDirectoryChild unixDirectoryChild = UnixDirectoryChild.builder()
+                    .name(getStringOrNull(jsonObject, "name"))
+                    .type(getEntityTypeFromSymbolicPermissions(getStringOrNull(jsonObject, "mode")))
+                    .link(constructLinkString(getStringOrNull(jsonObject, "name"))).build();
                 directoryChildren.add(unixDirectoryChild);
             }
         }
         return directoryChildren;
     }
-    
+
     private UnixEntityType getEntityTypeFromSymbolicPermissions(String permissions) {
         if (permissions.startsWith("d")) {
             return UnixEntityType.DIRECTORY;
         }
         return UnixEntityType.FILE;
-        
+
     }
 
     private String constructLinkString(String fileName) {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+            .getRequest();
         String requestURL = request.getRequestURL().toString();
         if (requestURL.charAt(requestURL.length() - 1) == '/') {
             requestURL = requestURL.substring(0, requestURL.length() - 1);
@@ -115,7 +111,7 @@ public class ListUnixDirectoryZosmfRunner extends AbstractZosmfRequestRunner<Uni
             return String.format("%s%s/%s", requestURL, this.path, fileName);
         }
     }
-    
+
     @Override
     protected ZoweApiRestException createException(JsonObject jsonResponse, int statusCode) {
         if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {

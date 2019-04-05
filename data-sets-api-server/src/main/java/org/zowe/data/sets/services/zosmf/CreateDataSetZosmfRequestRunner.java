@@ -15,7 +15,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
 import org.zowe.api.common.utils.JsonUtils;
 import org.zowe.api.common.utils.ResponseCache;
@@ -39,14 +39,14 @@ public class CreateDataSetZosmfRequestRunner extends AbstractZosmfDataSetsReques
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException, IOException {
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException, IOException {
         // TODO MAYBE - consider extracting to common validation mechanism
         if (request.getDataSetOrganization() == DataSetOrganisationType.PS && request.getDirectoryBlocks() != null
                 && request.getDirectoryBlocks() != 0) {
             throw new InvalidDirectoryBlockException(dataSetName);
         }
         String urlPath = String.format("restfiles/ds/%s", dataSetName);
-        URI requestUrl = zosmfConnector.getFullUrl(urlPath);
+        URI requestUrl = zConnector.getFullUrl(urlPath);
         JsonObject requestBody = convertIntoZosmfRequestJson(request);
         StringEntity requestEntity = new StringEntity(requestBody.toString(), ContentType.APPLICATION_JSON);
         RequestBuilder requestBuilder = RequestBuilder.post(requestUrl).setEntity(requestEntity);

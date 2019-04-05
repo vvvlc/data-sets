@@ -14,11 +14,10 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
+import org.zowe.api.common.services.AbstractZRequestRunner;
 import org.zowe.api.common.utils.ResponseCache;
-import org.zowe.api.common.zosmf.services.AbstractZosmfRequestRunner;
 import org.zowe.unix.files.exceptions.FileNotFoundException;
 import org.zowe.unix.files.exceptions.PathNameNotValidException;
 import org.zowe.unix.files.exceptions.UnauthorisedFileException;
@@ -28,13 +27,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class GetUnixFileContentRunner extends AbstractZosmfRequestRunner<UnixFileContent> {
-    
-    @Autowired
-    ZosmfConnector zosmfConnector;
+public class GetUnixFileContentRunner extends AbstractZRequestRunner<UnixFileContent> {
 
     private String path;
-    
+
     public GetUnixFileContentRunner(String path) {
         this.path = path;
     }
@@ -45,8 +41,8 @@ public class GetUnixFileContentRunner extends AbstractZosmfRequestRunner<UnixFil
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException {
-        URI requestUrl = zosmfConnector.getFullUrl("restfiles/fs" + path);
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException {
+        URI requestUrl = zConnector.getFullUrl("restfiles/fs" + path);
         RequestBuilder requestBuilder = RequestBuilder.get(requestUrl);
         return requestBuilder;
     }
@@ -55,7 +51,7 @@ public class GetUnixFileContentRunner extends AbstractZosmfRequestRunner<UnixFil
     protected UnixFileContent getResult(ResponseCache responseCache) throws IOException {
         return new UnixFileContent(responseCache.getEntity());
     }
-    
+
     @Override
     protected ZoweApiRestException createException(JsonObject jsonResponse, int statusCode) {
         JsonElement details = jsonResponse.get("details");

@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
 import org.zowe.api.common.utils.ResponseCache;
 
@@ -31,9 +31,9 @@ public abstract class AbstractListDataSetsZosmfRequestRunner<T> extends Abstract
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException, IOException {
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException, IOException {
         String query = String.format("dslevel=%s", filter);
-        URI requestUrl = zosmfConnector.getFullUrl("restfiles/ds", query); // $NON-NLS-1$
+        URI requestUrl = zConnector.getFullUrl("restfiles/ds", query); // $NON-NLS-1$
         RequestBuilder requestBuilder = RequestBuilder.get(requestUrl);
         addHeaders(requestBuilder);
         return requestBuilder;
@@ -43,7 +43,7 @@ public abstract class AbstractListDataSetsZosmfRequestRunner<T> extends Abstract
 
     @Override
     protected int[] getSuccessStatus() {
-        return new int[]{HttpStatus.SC_OK};
+        return new int[] { HttpStatus.SC_OK };
     }
 
     @Override

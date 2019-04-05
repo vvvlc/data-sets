@@ -21,7 +21,11 @@ import org.zowe.api.common.connectors.zosmf.exceptions.DataSetNotFoundException;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
 import org.zowe.api.common.model.ItemsWrapper;
 import org.zowe.api.common.test.ZoweApiTest;
-import org.zowe.data.sets.model.*;
+import org.zowe.data.sets.model.DataSet;
+import org.zowe.data.sets.model.DataSetAttributes;
+import org.zowe.data.sets.model.DataSetContent;
+import org.zowe.data.sets.model.DataSetContentWithEtag;
+import org.zowe.data.sets.model.DataSetCreateRequest;
 
 import java.util.Arrays;
 import java.util.List;

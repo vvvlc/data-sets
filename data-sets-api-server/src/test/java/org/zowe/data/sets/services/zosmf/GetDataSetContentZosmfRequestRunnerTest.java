@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class GetDataSetContentZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class GetDataSetContentZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     @Test
     public void get_content_should_call_zosmf_and_parse_response_correctly() throws Exception {

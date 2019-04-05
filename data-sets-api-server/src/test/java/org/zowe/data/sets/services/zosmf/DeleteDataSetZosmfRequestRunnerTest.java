@@ -16,7 +16,7 @@ import org.zowe.api.common.connectors.zosmf.exceptions.DataSetNotFoundException;
 
 import static org.mockito.Mockito.when;
 
-public class DeleteDataSetZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class DeleteDataSetZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     @Test
     public void delete_data_set_should_call_zosmf_correctly() throws Exception {

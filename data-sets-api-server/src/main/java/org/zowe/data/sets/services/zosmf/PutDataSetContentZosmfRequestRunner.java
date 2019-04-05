@@ -16,7 +16,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.springframework.util.StringUtils;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.connectors.zosmf.exceptions.DataSetNotFoundException;
 import org.zowe.api.common.exceptions.PreconditionFailedException;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
@@ -39,9 +39,9 @@ public class PutDataSetContentZosmfRequestRunner extends AbstractZosmfDataSetsRe
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException, IOException {
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException, IOException {
         String urlPath = String.format("restfiles/ds/%s", dataSetName);
-        URI requestUrl = zosmfConnector.getFullUrl(urlPath); // $NON-NLS-1$
+        URI requestUrl = zConnector.getFullUrl(urlPath); // $NON-NLS-1$
         DataSetContent content = contentWithEtag.getContent();
         StringEntity requestEntity = new StringEntity(content.getRecords());
         RequestBuilder requestBuilder = RequestBuilder.put(requestUrl).setEntity(requestEntity);

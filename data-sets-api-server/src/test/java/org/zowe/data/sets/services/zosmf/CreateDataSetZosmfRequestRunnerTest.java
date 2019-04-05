@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ CreateDataSetZosmfRequestRunner.class })
-public class CreateDataSetZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class CreateDataSetZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     // TODO - Add tests for dsnType = library for zosmf 2.3 - what else fails on 2.2? https://github.com/zowe/data-sets/issues/47
 

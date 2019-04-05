@@ -25,14 +25,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.zowe.api.common.connectors.ConnectorProperties;
 import org.zowe.api.common.errors.ApiError;
 import org.zowe.api.common.exceptions.ZoweApiErrorException;
 import org.zowe.api.common.exceptions.ZoweRestExceptionHandler;
 import org.zowe.api.common.model.ItemsWrapper;
 import org.zowe.api.common.utils.JsonUtils;
 import org.zowe.api.common.utils.ZosUtils;
-import org.zowe.data.sets.model.*;
-import org.zowe.data.sets.services.DataSetService;
+import org.zowe.data.sets.model.AllocationUnitType;
+import org.zowe.data.sets.model.DataSet;
+import org.zowe.data.sets.model.DataSetAttributes;
+import org.zowe.data.sets.model.DataSetContent;
+import org.zowe.data.sets.model.DataSetContentWithEtag;
+import org.zowe.data.sets.model.DataSetCreateRequest;
+import org.zowe.data.sets.model.DataSetOrganisationType;
+import org.zowe.data.sets.services.zosmf.ZosmfDataSetService;
 
 import java.net.URI;
 import java.text.MessageFormat;
@@ -58,7 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosUtils.class, ServletUriComponentsBuilder.class})
+@PrepareForTest({ ZosUtils.class, ServletUriComponentsBuilder.class })
 public class DataSetsControllerTest {
 
     private static final String ENDPOINT_ROOT = "/api/v1/datasets";
@@ -70,7 +77,10 @@ public class DataSetsControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private DataSetService dataSetService;
+    private ZosmfDataSetService dataSetService;
+
+    @Mock
+    private ConnectorProperties connectorProperties;
 
     @InjectMocks
     private DataSetsController datasetsController;
@@ -79,9 +89,11 @@ public class DataSetsControllerTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(datasetsController)
-                .setControllerAdvice(new ZoweRestExceptionHandler()).build();
+            .setControllerAdvice(new ZoweRestExceptionHandler()).build();
         PowerMockito.mockStatic(ZosUtils.class);
         when(ZosUtils.getUsername()).thenReturn(DUMMY_USER);
+        // TODO - different flavours with zss?
+        when(connectorProperties.getConnector()).thenReturn("zosmf");
     }
 
     @Test
@@ -94,8 +106,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetMembers(pdsName)).thenReturn(items);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{dsn}/members", pdsName)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(JsonUtils.convertToJsonString(items)));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(JsonUtils.convertToJsonString(items)));
 
         verify(dataSetService, times(1)).listDataSetMembers(pdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -109,8 +121,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetMembers(pdsName)).thenReturn(new ItemsWrapper<String>(Collections.emptyList()));
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{dsn}/members", pdsName)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(EMPTY_ITEMS));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(EMPTY_ITEMS));
 
         verify(dataSetService, times(1)).listDataSetMembers(pdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -127,9 +139,9 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetMembers(invalidPdsName)).thenThrow(new ZoweApiErrorException(expectedError));
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{dsn}/members", invalidPdsName))
-                .andExpect(status().is(expectedError.getStatus().value()))
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(errorMessage));
+            .andExpect(status().is(expectedError.getStatus().value()))
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(errorMessage));
 
         verify(dataSetService, times(1)).listDataSetMembers(invalidPdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -146,9 +158,9 @@ public class DataSetsControllerTest {
         when(dataSetService.getContent(memberName)).thenReturn(response);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{dsn}/content", memberName)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(JsonUtils.convertToJsonString(expected)))
-                .andExpect(header().string("ETag", equalTo(eTag)));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(JsonUtils.convertToJsonString(expected)))
+            .andExpect(header().string("ETag", equalTo(eTag)));
 
         verify(dataSetService, times(1)).getContent(memberName);
         verifyNoMoreInteractions(dataSetService);
@@ -165,9 +177,9 @@ public class DataSetsControllerTest {
         when(dataSetService.getContent(invalidPdsName)).thenThrow(new ZoweApiErrorException(expectedError));
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{dsn}/content", invalidPdsName))
-                .andExpect(status().is(expectedError.getStatus().value()))
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(errorMessage));
+            .andExpect(status().is(expectedError.getStatus().value()))
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(errorMessage));
 
         verify(dataSetService, times(1)).getContent(invalidPdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -182,10 +194,10 @@ public class DataSetsControllerTest {
         when(dataSetService.putContent(memberName, request)).thenReturn(eTag);
 
         mockMvc
-                .perform(put(ENDPOINT_ROOT + "/{dsn}/content", memberName)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
-                .andExpect(status().isNoContent()).andExpect(content().string(""))
-                .andExpect(header().string("ETag", equalTo("\"" + eTag + "\"")));
+            .perform(put(ENDPOINT_ROOT + "/{dsn}/content", memberName)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
+            .andExpect(status().isNoContent()).andExpect(content().string(""))
+            .andExpect(header().string("ETag", equalTo("\"" + eTag + "\"")));
 
         verify(dataSetService, times(1)).putContent(memberName, request);
         verifyNoMoreInteractions(dataSetService);
@@ -202,10 +214,10 @@ public class DataSetsControllerTest {
         when(dataSetService.putContent(memberName, request)).thenReturn(eTag);
 
         mockMvc
-                .perform(put(ENDPOINT_ROOT + "/{dsn}/content", memberName).header("If-Match", ifMatch)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
-                .andExpect(status().isNoContent()).andExpect(content().string(""))
-                .andExpect(header().string("ETag", equalTo(eTag)));
+            .perform(put(ENDPOINT_ROOT + "/{dsn}/content", memberName).header("If-Match", ifMatch)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
+            .andExpect(status().isNoContent()).andExpect(content().string(""))
+            .andExpect(header().string("ETag", equalTo(eTag)));
 
         verify(dataSetService, times(1)).putContent(memberName, request);
         verifyNoMoreInteractions(dataSetService);
@@ -224,11 +236,11 @@ public class DataSetsControllerTest {
         doThrow(new ZoweApiErrorException(expectedError)).when(dataSetService).putContent(invalidPdsName, request);
 
         mockMvc
-                .perform(put(ENDPOINT_ROOT + "/{dsn}/content", invalidPdsName)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
-                .andExpect(status().is(expectedError.getStatus().value()))
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(errorMessage));
+            .perform(put(ENDPOINT_ROOT + "/{dsn}/content", invalidPdsName)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content(JsonUtils.convertToJsonString(content)))
+            .andExpect(status().is(expectedError.getStatus().value()))
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(errorMessage));
 
         verify(dataSetService, times(1)).putContent(invalidPdsName, request);
         verifyNoMoreInteractions(dataSetService);
@@ -240,7 +252,7 @@ public class DataSetsControllerTest {
         String invalidPdsName = "TEST.JCL";
 
         mockMvc.perform(put(ENDPOINT_ROOT + "/{dsn}/content", invalidPdsName)
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content("JUNK")).andExpect(status().isBadRequest());
+            .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).content("JUNK")).andExpect(status().isBadRequest());
 
         verifyNoMoreInteractions(dataSetService);
     }
@@ -259,8 +271,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSets(filter)).thenReturn(wrapperList);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}/list", filter)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(JsonUtils.convertToJsonString(wrapperList)));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(JsonUtils.convertToJsonString(wrapperList)));
 
         verify(dataSetService, times(1)).listDataSets(filter);
         verifyNoMoreInteractions(dataSetService);
@@ -276,8 +288,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSets(anyString())).thenReturn(empty);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}/list", dummy)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(EMPTY_ITEMS));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(EMPTY_ITEMS));
 
         verify(dataSetService, times(1)).listDataSets(dummy);
         verifyNoMoreInteractions(dataSetService);
@@ -294,9 +306,9 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSets(invalidPdsName)).thenThrow(new ZoweApiErrorException(expectedError));
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}/list", invalidPdsName))
-                .andExpect(status().is(expectedError.getStatus().value()))
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(errorMessage));
+            .andExpect(status().is(expectedError.getStatus().value()))
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(errorMessage));
 
         verify(dataSetService, times(1)).listDataSets(invalidPdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -306,11 +318,11 @@ public class DataSetsControllerTest {
     public void test_get_data_sets_attributes_success() throws Exception {
 
         DataSetAttributes cobol = DataSetAttributes.builder().blockSize(133)
-                .dataSetOrganization(DataSetOrganisationType.PO).recordLength(133).recordFormat("FB")
-                .allocationUnit(AllocationUnitType.TRACK).volumeSerial("P4P020").build();
+            .dataSetOrganization(DataSetOrganisationType.PO).recordLength(133).recordFormat("FB")
+            .allocationUnit(AllocationUnitType.TRACK).volumeSerial("P4P020").build();
         DataSetAttributes rexx = DataSetAttributes.builder().blockSize(120)
-                .dataSetOrganization(DataSetOrganisationType.PS).recordLength(120).recordFormat("FB")
-                .allocationUnit(AllocationUnitType.TRACK).volumeSerial("P4P023").build();
+            .dataSetOrganization(DataSetOrganisationType.PS).recordLength(120).recordFormat("FB")
+            .allocationUnit(AllocationUnitType.TRACK).volumeSerial("P4P023").build();
         DataSetAttributes vsam = DataSetAttributes.builder().build();
 
         List<DataSetAttributes> dataSetsList = Arrays.asList(cobol, rexx, vsam);
@@ -320,8 +332,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetAttributes(filter)).thenReturn(wrapperList);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}", filter)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(JsonUtils.convertToJsonString(wrapperList)));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(JsonUtils.convertToJsonString(wrapperList)));
 
         verify(dataSetService, times(1)).listDataSetAttributes(filter);
         verifyNoMoreInteractions(dataSetService);
@@ -337,8 +349,8 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetAttributes(anyString())).thenReturn(empty);
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}", dummy)).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(content().string(EMPTY_ITEMS));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string(EMPTY_ITEMS));
 
         verify(dataSetService, times(1)).listDataSetAttributes(dummy);
         verifyNoMoreInteractions(dataSetService);
@@ -355,9 +367,9 @@ public class DataSetsControllerTest {
         when(dataSetService.listDataSetAttributes(invalidPdsName)).thenThrow(new ZoweApiErrorException(expectedError));
 
         mockMvc.perform(get(ENDPOINT_ROOT + "/{filter}", invalidPdsName))
-                .andExpect(status().is(expectedError.getStatus().value()))
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(errorMessage));
+            .andExpect(status().is(expectedError.getStatus().value()))
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(errorMessage));
 
         verify(dataSetService, times(1)).listDataSetAttributes(invalidPdsName);
         verifyNoMoreInteractions(dataSetService);
@@ -377,9 +389,9 @@ public class DataSetsControllerTest {
         mockDataSetUriConstruction(dataSetName, locationUri);
 
         mockMvc
-                .perform(post(ENDPOINT_ROOT).contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(JsonUtils.convertToJsonString(request)))
-                .andExpect(status().isCreated()).andExpect(header().string("Location", locationUri.toString()));
+            .perform(post(ENDPOINT_ROOT).contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(JsonUtils.convertToJsonString(request)))
+            .andExpect(status().isCreated()).andExpect(header().string("Location", locationUri.toString()));
 
         verify(dataSetService, times(1)).createDataSet(request);
         verifyNoMoreInteractions(dataSetService);
@@ -390,7 +402,7 @@ public class DataSetsControllerTest {
         String dummy = "junk";
 
         mockMvc.perform(delete(ENDPOINT_ROOT + "/{dsn}", dummy)).andExpect(status().isNoContent())
-                .andExpect(jsonPath("$").doesNotExist());
+            .andExpect(jsonPath("$").doesNotExist());
 
         verify(dataSetService, times(1)).deleteDataSet(dummy);
         verifyNoMoreInteractions(dataSetService);
@@ -401,13 +413,13 @@ public class DataSetsControllerTest {
         String dummy = "junk";
 
         ApiError expectedError = ApiError.builder().message("Delete went wrong").status(HttpStatus.I_AM_A_TEAPOT)
-                .build();
+            .build();
 
         doThrow(new ZoweApiErrorException(expectedError)).when(dataSetService).deleteDataSet(dummy);
 
         mockMvc.perform(delete(ENDPOINT_ROOT + "/{dsn}", dummy)).andExpect(status().isIAmATeapot())
-                .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
-                .andExpect(jsonPath("$.message").value(expectedError.getMessage()));
+            .andExpect(jsonPath("$.status").value(expectedError.getStatus().name()))
+            .andExpect(jsonPath("$.message").value(expectedError.getMessage()));
 
         verify(dataSetService, times(1)).deleteDataSet(dummy);
         verifyNoMoreInteractions(dataSetService);

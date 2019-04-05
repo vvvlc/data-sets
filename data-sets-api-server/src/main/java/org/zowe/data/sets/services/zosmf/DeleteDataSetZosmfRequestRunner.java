@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.RequestBuilder;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.ZConnector;
 import org.zowe.api.common.connectors.zosmf.exceptions.DataSetNotFoundException;
 import org.zowe.api.common.exceptions.ZoweApiRestException;
 import org.zowe.api.common.utils.ResponseCache;
@@ -32,8 +32,8 @@ public class DeleteDataSetZosmfRequestRunner extends AbstractZosmfDataSetsReques
     }
 
     @Override
-    protected RequestBuilder prepareQuery(ZosmfConnector zosmfConnector) throws URISyntaxException, IOException {
-        URI requestUrl = zosmfConnector.getFullUrl(String.format("restfiles/ds/%s", dataSetName));
+    protected RequestBuilder prepareQuery(ZConnector zConnector) throws URISyntaxException, IOException {
+        URI requestUrl = zConnector.getFullUrl(String.format("restfiles/ds/%s", dataSetName));
         return RequestBuilder.delete(requestUrl);
     }
 

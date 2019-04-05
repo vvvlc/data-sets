@@ -7,11 +7,11 @@
  *
  * Copyright IBM Corporation 2018, 2019
  */
-package org.zowe.data.sets.services.zosmf;
+package org.zowe.data.sets.services.zss;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zowe.api.common.connectors.zosmf.ZosmfConnector;
+import org.zowe.api.common.connectors.zss.ZssConnector;
 import org.zowe.api.common.model.ItemsWrapper;
 import org.zowe.data.sets.model.DataSet;
 import org.zowe.data.sets.model.DataSetAttributes;
@@ -19,11 +19,11 @@ import org.zowe.data.sets.model.DataSetContentWithEtag;
 import org.zowe.data.sets.model.DataSetCreateRequest;
 import org.zowe.data.sets.services.DataSetService;
 
-@Service("zosmfDataSetService")
-public class ZosmfDataSetService implements DataSetService {
+@Service("zssDataSetService")
+public class ZssDataSetService implements DataSetService {
 
     @Autowired
-    ZosmfConnector zosmfConnector;
+    ZssConnector zssConnector;
 
     // TODO - review error handling, serviceability, https://github.com/zowe/data-sets/issues/16
     // use the zomsf error categories to work out errors
@@ -31,44 +31,37 @@ public class ZosmfDataSetService implements DataSetService {
 
     @Override
     public ItemsWrapper<String> listDataSetMembers(String dataSetName) {
-        ListDataSetMembersZosmfRequestRunner runner = new ListDataSetMembersZosmfRequestRunner(dataSetName);
-        return runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 
     @Override
     public ItemsWrapper<DataSetAttributes> listDataSetAttributes(String filter) {
-        ListDataSetsAttributesZosmfRequestRunner runner = new ListDataSetsAttributesZosmfRequestRunner(filter);
-        return runner.run(zosmfConnector);
+        ListDataSetsAttributesZssRequestRunner runner = new ListDataSetsAttributesZssRequestRunner(filter);
+        return runner.run(zssConnector);
     }
 
     @Override
     public ItemsWrapper<DataSet> listDataSets(String filter) {
-        ListDataSetsZosmfRequestRunner runner = new ListDataSetsZosmfRequestRunner(filter);
-        return runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 
     @Override
     public DataSetContentWithEtag getContent(String dataSetName) {
-        GetDataSetContentZosmfRequestRunner runner = new GetDataSetContentZosmfRequestRunner(dataSetName);
-        return runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 
     @Override
     public String putContent(String dataSetName, DataSetContentWithEtag contentWithEtag) {
-        PutDataSetContentZosmfRequestRunner runner = new PutDataSetContentZosmfRequestRunner(dataSetName,
-                contentWithEtag);
-        return runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 
     @Override
     public String createDataSet(DataSetCreateRequest request) {
-        CreateDataSetZosmfRequestRunner runner = new CreateDataSetZosmfRequestRunner(request);
-        return runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 
     @Override
     public void deleteDataSet(String dataSetName) {
-        DeleteDataSetZosmfRequestRunner runner = new DeleteDataSetZosmfRequestRunner(dataSetName);
-        runner.run(zosmfConnector);
+        throw new UnsupportedOperationException("not supported using zss atm");
     }
 }

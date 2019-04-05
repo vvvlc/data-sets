@@ -23,7 +23,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class ListDataSetMembersZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class ListDataSetMembersZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     @Test
     public void list_member_names_should_call_zosmf_and_parse_response_correctly() throws Exception {

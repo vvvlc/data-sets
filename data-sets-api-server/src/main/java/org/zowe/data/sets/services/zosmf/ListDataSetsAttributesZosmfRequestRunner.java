@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class ListDataSetsAttributesZosmfRequestRunner extends AbstractListDataSetsZosmfRequestRunner<ItemsWrapper<DataSetAttributes>> {
+public class ListDataSetsAttributesZosmfRequestRunner
+        extends AbstractListDataSetsZosmfRequestRunner<ItemsWrapper<DataSetAttributes>> {
 
     public ListDataSetsAttributesZosmfRequestRunner(String filter) {
         super(filter);

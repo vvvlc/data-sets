@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PutDataSetContentZosmfRequestRunner.class })
-public class PutDataSetContentZosmfRequestRunnerTest extends AbstractZosmfRequestRunnerTest {
+public class PutDataSetContentZosmfRequestRunnerTest extends AbstractZRequestRunnerTest {
 
     @Test
     public void put_content_should_call_zosmf_and_parse_response_correctly() throws Exception {
