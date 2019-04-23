@@ -38,5 +38,5 @@ zss:
   ipAddress: ${zss.ipAddress}
   port: ${zss.port}
 
-connector: ${connector}
+connector: ${connectorType}
   
