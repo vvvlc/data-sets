@@ -81,7 +81,7 @@ subprojects {
     }
 
     tasks.withType(Test) {
-        maxParallelForks = Runtime.runtime.availableProcessors()
+        maxParallelForks = 2
     }
 
 }
